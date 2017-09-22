@@ -1,0 +1,46 @@
+<script src="js/angular.js"></script>
+<script>
+    angular.module("myApp", []).controller("myCtrl", function ($scope) {
+        $scope.model = { "todos": [] };
+        var dbSize = 5 * 1024 * 1024; // 5MB
+        $scope.webdb = {};
+
+        $scope.addTodo = function () {
+            $scope.model.todos.push({ "name": $scope.todo_to_add })
+            
+            var db = $scope.webdb.db;
+                db.transaction(function (tx) {
+                    tx.executeSql("INSERT INTO todo(todo) VALUES(?) ", [$scope.todo_to_add],
+                    function(){
+                        $scope.todo_to_add = "";
+                    },
+                    function(){
+                        console.log("failed");
+                    }
+                    );
+                });
+
+        }
+        $scope.webdb.db = openDatabase("Todo", "1", "Todo manager", dbSize);
+        var db = $scope.webdb.db;
+        db.transaction(function (tx) {
+            tx.executeSql("CREATE TABLE IF NOT EXISTS " +
+                            "todo(ID TEXT PRIMARY KEY, todo TEXT, added_on DATETIME, finished_on DATETIME)", [],
+                function(){ console.log("success")},
+                function(){ console.log("failure")}
+            );
+        });
+
+    });
+
+</script>
+<form ng-app="myApp" ng-controller="myCtrl" ng-submit="addTodo()">
+    <h2>Todos</h2>
+    <div class="row" ng-repeat="todo in model.todos">
+        {{todo.name}}
+    </div>
+    <div class="pull-right">
+        <input placeholder="add todo" ng-model="todo_to_add" />
+        <button type="submit">+</button>
+    </div>
+</form>
