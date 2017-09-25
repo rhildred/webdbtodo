@@ -16,6 +16,7 @@
                     [uuid.v4(), $scope.todo_to_add, dToday],
                     function(){
                         $scope.todo_to_add = "";
+                        $scope.readTodos();
                     },
                     function(){
                         console.log("failed");
@@ -27,10 +28,12 @@
         $scope.readTodos = function(){
             var db = $scope.webdb.db;
             db.transaction(function (tx) {
-                tx.executeSql("SELECT * FROM todos", [],
+                tx.executeSql("SELECT * FROM todo", [],
                 function(tx, rs){
+                    $scope.model.todos = [];
                     for (var i = 0; i < rs.rows.length; i++) {
-                        $scope.model.todos.push({ "name": rs.rows.item(i).todo });
+                        $scope.model.todos.push({ "name": rs.rows.item(i).todo, 
+                        "ID": rs.rows.item(i).ID});
                     }
                     $scope.$apply();
                 }, 
@@ -39,12 +42,29 @@
                 });
             });
         }
+        $scope.deleteTodo = function(sId){
+            var db = $scope.webdb.db;
+            db.transaction(function (tx) {
+                tx.executeSql("DELETE FROM todo WHERE ID = ?", [sId],
+                function(){
+                    console.log("deleted");
+                    $scope.readTodos();
+                },
+                function(){
+                    console.log("failed to delete");
+                }
+                );
+            });
+        }
         $scope.webdb.db = openDatabase("Todo", "1", "Todo manager", dbSize);
         var db = $scope.webdb.db;
         db.transaction(function (tx) {
             tx.executeSql("CREATE TABLE IF NOT EXISTS " +
                             "todo(ID TEXT PRIMARY KEY, todo TEXT, added_on DATETIME, finished_on DATETIME)", [],
-                function(){ console.log("success")},
+                function(){ 
+                    console.log("success");
+                    $scope.readTodos();
+                },
                 function(){ console.log("failure")}
             );
         });
@@ -56,6 +76,7 @@
     <h2>Todos</h2>
     <div class="row" ng-repeat="todo in model.todos">
         {{todo.name}}
+        <button type="button" ng-click="deleteTodo(todo.ID)">-</button>
     </div>
     <div class="pull-right">
         <input placeholder="add todo" ng-model="todo_to_add" />
