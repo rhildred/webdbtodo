@@ -1,0 +1,19 @@
+{
+  "name": "todo",
+  "description": "simple webdb todo",
+  "main": "",
+  "license": "MIT",
+  "homepage": "https://github.com/rhildred/webdbtodo",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "lib",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-messages": "^1.6.6",
+    "angular-material": "^1.1.5"
+  }
+}
